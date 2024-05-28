@@ -39,24 +39,30 @@
 
 <script src="https://code.jquery.com/jquery.min.js"></script>
 <script>
-	$(function(){
-		let num = 1;
-		$('#btnAddFile').on('click',function(e){
-			let tag ='<input type ="file" name="upfile'
-					+ num +'"class=upfile" multiple/><br>';
-			$('#tdfile').append(tag);
-			num++;
-		})
-	})
+  $( function() {
+     let num = 1;
+     $('#btnAddFile').on('click', function(e) {
+         let tag = '<input type="file" name="upfile"'        
+           + ' class="upfile" multiple/><br>';
+         $('#tdfile').append(tag);
+         num++;
+     })  
+  } );
+
+  // html input type="file" name="upload" multiple />
+  // 여러파일을 선택하여 보낼수 있다 + ctrl이나 shift 여러개선택
 </script>
+
 </head>
 <body>
   <main>
     
-    <%@include file="/WEB-INF/include/pdspagingmenus.jsp" %>
+    <%@include file="/WEB-INF/include/pdsmenus.jsp" %>
   
-	<h2>게시글 등록</h2>
-	<form action="/Pds/Write" method="POST" enctype="multipart/form-data">
+	<h2>자료실 글 등록</h2>
+	<form action  = "/Pds/Write" 
+	      method="POST"
+	      enctype = "multipart/form-data"> <!-- 파일전송(binary) -->
 	<input type="hidden" name="menu_id" value="${ map.menu_id }" />
 	<input type="hidden" name="nowpage" value="${ map.nowpage }" />
 	<table>
@@ -72,13 +78,13 @@
 	   <td>내용</td>
 	   <td><textarea name="content"></textarea></td>
 	 </tr>	
-	 	 <tr>
+	 <tr>
 	   <td>파일</td>
-	   <td id=tdfile>
-	   		<input type="button" id="btnAddFile" value="파일추가(최대 30M byte)" name="file" />
-	   		<input type="file" name="upfile" class="upfile" multiple />
+	   <td id="tdfile">
+	     <input type="button" id="btnAddFile" value="파일추가(최대 30M byte)" />
+	     <input type="file" name="upfile" class="upfile" multiple />
 	   </td>
-	 </tr>
+	 </tr>	
 	 <tr>
 	   <td colspan="2">
 	    <input type="submit" value="글 쓰기" />
@@ -90,20 +96,16 @@
 	</form>   
 	
   </main>
-  
-<script>
+    
+  <script>
+    // 목록 가기
   	const  goListEl  = document.getElementById('goList');
   	goListEl.addEventListener('click', function(e) {
-  		location.href = '/Pds/List?menu_id=${menu_id}&nowpage=${nowpage}';
-  	})
+  		location.href = '/BoardPaging/List?menu_id=${menu_id}&nowpage=${nowpage}';
+  	})  
+  </script>
   
-</script>
-<script>
-	const addfileEl = document.querySelector('#btnAddFile');
-	
-
-</script>
-  
+    
 </body>
 </html>
 

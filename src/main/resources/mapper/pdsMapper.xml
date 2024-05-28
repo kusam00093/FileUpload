@@ -33,7 +33,7 @@
   
   </select>
   
-  <select id="getFileList">:
+  <select id="getFileList">
   
    SELECT     FILE_NUM
 			  ,BNO
@@ -45,106 +45,117 @@
   
   </select>
   
-  <!--  자료시 글 쓰기(Board table) -->
+  <!-- 자료실 글쓰기 (Board) -->
   <insert id="setWrite">
-  	INSERT INTO BOARD (
-  		BNO,
-  		MENU_ID,
-  		TITLE,
-  		CONTENT,
-  		WRITER,
-  		REGDATE,
-  		HIT
+  	INSERT  INTO  BOARD (
+  	       BNO
+  	     , MENU_ID
+  	     , TITLE
+  	     , CONTENT
+  	     , WRITER
+  	     , REGDATE
+  	     , HIT   
   	)
-  	VALUES(
-  		(SELECT NVL(MAX(BNO),0)+1 FROM BOARD),
-  		#{menu_id},
-  		#{title},
-  		#{content},
-  		#{writer},
-  		sysdate,
-  		0
-  	)
-  
-  
+  	VALUES (
+  	       (SELECT NVL(MAX(BNO), 0)+1 FROM BOARD)
+  	     , #{ menu_id }
+  	     , #{ title   }
+  	     , #{ content }
+  	     , #{ writer  }
+  	     , SYSDATE
+  	     , 0
+  	 )
   </insert>
-  <!--  자료시 파일정보 저장(FIles table) -->
-  <!--  FileInsert : 넘어온 파일 여러개를 한번에 저장 insert all -->
-  <!--  ORACLE INSERT ALL 반복할 때  
-  		1)SELECT NVL(MAX(file_num),0)+1, 
-  		2)시퀀스는 한번만 실행되기 때문에
-  		INSERT ALL 에 바로 집어 넣을 수 없다
-  		별도의 ORACLE 함수를 생성하여 호출 해야 값을 증가 할 수 있다
-  		
-  		mybatis <insert> 안에는 ; 을 사용할수 없다
-  		- insert value ; 를 여러번 사용할 수 없다 (이유 ; 때문에)
-  		insert all 사용하면 insert 여러번 가능한데 이경우 
-  		select (max()) , 시퀀스는 여러번 적어도 한번만 호출되므로
-  		insert value 의 값이 증가 되지 않는다
-  		=> oracle에 별도 함수에 저장하여 반복 호출하면 된다
-  		 -->
+  
+  <!-- 자료실 파일정보저장( Files)  -->
+  <!-- FileInsert : 넘어온 파일여러개를 한번에 저장 insert all 
+    ORACLE INSERT ALL 반복할때 
+     1)  SELECT NVL(MAX(file_num),0) + 1 나
+     2)  시퀀스는 한번만 실행되기 때문에
+     INSERT ALL 에 바로집어넣을 수 없다  
+     별도의 ORACLE 함수를 생성하여 호출해야 값을 증가 할 수 있다
+     
+     mybatis <insert > 안에는 ;을 사용할 수 없다
+     - insert value ;를 여러번 사용할 수 없다(이유 ; 때문에)
+     insert all 사용하면 insert 여러번 가능한데 이 경우
+      select(max()) , 시퀀스는 여러번 적어도 한번만 호출되므로 
+      insert value 가 중가되지않는다
+      => oracle 별도 함수에 시퀀스를 저장하여 반복호출하면 된다 
+  -->
   <insert id="setFileWrite">
-  	<foreach item="file" collection="fileList" 
-  	index="i" 
-  	open="INSERT ALL"
-  	close="SELECT * FROM DUAL" 
-  	separator=" ">
-  	INTO FILES VALUES(
-  		GET_FILENUM(),
-  		(SELECT MAX(BNO) FROM BOARD),
-  		#{file.filename},
-  		#{file.fileext},
-  		#{file.sfilename}
-  		)
-  		
-  		
-  	
-  	</foreach>
-  	
-  
+     <foreach collection="fileList" item ="file" 
+         index      = "i"
+         open       = "INSERT ALL"
+         close      = "SELECT * FROM DUAL"
+         separator  = " " >
+        INTO  FILES VALUES (
+            GET_FILENUM()                      
+            , ( SELECT MAX(BNO) FROM BOARD )
+            , #{ file.filename  }
+            , #{ file.fileext   }
+            , #{ file.sfilename }        
+        )
+     </foreach> 
   </insert>
-
-
-<select id="getPdsList">
-	SELECT 
-	    BNO,
-	    TITLE,
-	    WRITER,
-	    TO_CHAR(REGDATE, 'YYYY"년 "MM"월 "DD"일') AS REGDATE,
-	    HIT,
-	    (SELECT COUNT(*)FROM FILES F WHERE  B.BNO=F.BNO ) FILESCOUNT
-	    
-	FROM   BOARD B
-	WHERE  MENU_ID = 'MENU01'
-	ORDER BY BNO DESC
-</select>	 
-
-<select id="getPds">
-	SELECT 
-	    BNO,
-	    MENU_ID,
-	    TITLE,
-	    CONTENT,
-	    WRITER,
-	    TO_CHAR(REGDATE, 'YY"년 "MM"년 "DD"일') AS REGDATE
-	    
-	FROM  BOARD
-	WHERE BNO = #{bno}
-
-</select>
-
-<select id="getFileList">
-	SELECT 
-		FILE_NUM,
-		FILENAME,
-		FILEEXT,
-		SFILENAME
-	FROM FILES
-	WHERE BNO = #{bno}	
-
-
-</select>
-	
+  
+  <!-- 조회수 증가  -->
+  <update id="setReadcountUpdate">
+  
+    UPDATE  BOARD
+     SET    HIT = HIT + 1
+     WHERE  BNO = #{ bno  }     
+  
+  </update>
+  
+  <!-- 파라미터 file_num 는 오류발생 : arg0, param1 -->
+  <select id="getFileInfo">
+  
+    SELECT    FILE_NUM
+            , BNO
+            , FILENAME
+            , FILEEXT
+            , SFILENAME            
+     FROM   FILES
+     WHERE  FILE_NUM = #{ arg0 }
+  
+  </select>
+ 
+  <!-- Files table 삭제 : bno --> 
+  <delete  id="deleteUploadFile">
+  
+    DELETE  
+     FROM   FILES
+     WHERE  BNO = #{ bno } 
+  
+  </delete>
+  
+  <!-- Files table 삭제 : bno --> 
+  <delete  id="deleteUploadFileNum">
+  
+    DELETE  
+     FROM   FILES
+     WHERE  FILE_NUM = #{ file_num } 
+  
+  </delete>
+  
+  <!-- Board table 삭제 : bno -->
+  <delete  id="setDelete">
+  
+     DELETE
+      FROM   BOARD
+      WHERE  BNO = #{ bno }
+  
+  </delete>
+  
+  <update id="setUpdate">
+  	UPDATE BOARD
+  	 SET   TITLE = #{title},
+  	 	   CONTENT = #{content}
+  	 WHERE BNO = #{bno}
+  
+  </update>
+  
+  
 </mapper>
 
 

@@ -35,86 +35,106 @@ public class PdsFile {
 	    for(MultipartFile uploadFile : uploadFiles ) {
 	    	
 	    	String  originalName =  uploadFile.getOriginalFilename();
-	    	System.out.println( "originalName:" + originalName );
-	    	//String  fileName     =  originalName.substring(   );
-	    	String fileName =
-	    			originalName.substring(originalName.lastIndexOf("\\")+1);   //abc.txt
-	    	String fileExt  =
-	    			originalName.substring(originalName.lastIndexOf("."));      // .txt
-	    	
-	    	
-	    	
+	    	//System.out.println( "originalName:" + originalName );
+	    	// c:\donwload\data\data.abc.txt
+	    	String  fileName     =  
+	    			(originalName.lastIndexOf("\\")<0) ?
+	    					originalName : 
+	    		originalName.substring( originalName.lastIndexOf("\\") + 1 ); // data.abc.txt
+	    	String  fileExt      = 
+	    		(originalName.lastIndexOf(".")<0) ?
+	    			"" : originalName.substring( originalName.lastIndexOf(".") ); // .txt
 	    	
 	    	// d:\dev\data\2024\05\27
-	    	// 날짜 폴더 생성 - 중복파일 방지목적
-	    	String folderPath = makeFolder(uploadPath);
-	    	
+	    	// 날짜 폴더 생성 
+	    	String  folderPath  = makeFolder( uploadPath ); 
 	    	// 파일명 중복방지 - 같은 폴더에는 마지막 업로드 된 파일만 저장
-	    	// 중복하지 않는 공유한 문자열 생성 : UUID 
-	    	String uuid = UUID.randomUUID().toString();
+	    	// 중복하지 않는 고유한 문자열 생성 : UUID
+	    	String  uuid        = UUID.randomUUID().toString();
 	    	
-	    	//
+	    	// d:\dev\data \ 2024\05\27 \ uuid _ data.abc.txt
+	    	String  saveName    = uploadPath + File.separator
+	    			           +  folderPath + File.separator  
+	    			           +  uuid       + "_" + fileName;   
+	    	// saveName2 : Files table sfilename
+	    	String  saveName2   = folderPath + File.separator  
+	    			+  uuid       + "_" + fileName;   
 	    	
-	    	String saveName = uploadPath     + File.separator
-	    						+ folderPath + File.separator
-	    						+ uuid       + "_" + fileName;
+	    	Path   savePath   =  Paths.get(saveName);
+	    	// import java.nio.file.Path;
+	    	// Paths.get() 특정 경로의 파일정보를 가져온다
 	    	
-	    	// Files table  sfilename : savaName2
-	    	String saveName2 = 	 folderPath + File.separator
-	    						+ uuid       + "_" + fileName;
-	    	
-	    	
-	    	Path savePath = Paths.get(saveName);
-	    	// import java.nio.file.path; 
-	    	// Paths.get() - 특정 경로의 파일정보를 가져온다
 	    	// 파일저장
 	    	try {
-				uploadFile.transferTo(savePath);      //  업로드된 파일을 폴더에 저장
-				System.out.println("저장됨");
+				uploadFile.transferTo(savePath);  // 업로드된 파일을 폴더에 저장
+				System.out.println("저장됨");				
 			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				
 				e.printStackTrace();
 			} // try end
 	    	
 	    	// 저장된 파일들의 정보를 map 에 List 로 저장 -> pdsServiceImpl 에 사용
-	    	FilesVo vo = new FilesVo(0,0,fileName, fileExt, saveName2);
+	    	FilesVo  vo = new FilesVo(0, 0, fileName, fileExt, saveName2);
+	    	fileList.add( vo );	    	
 	    	
-	    	
-	    	
-	    	fileList.add(vo);
-	    } // end for
-	    map.put("fileList",fileList);
-	}   // sava() end
+	    }  // end for
+	    
+	    map.put("fileList", fileList);
+		   		
+	}  // save() end
 	
-	
-	    private static String makeFolder( String uploadPath) {
-	    	// uploadpath
-	    	// d:\dev\data
-	    	// folderPath
-	    	// \2024\05\27
-	    	String dateStr    = LocalDate.now().format(
-	    			DateTimeFormatter.ofPattern("yyyy/MM/dd")
-	    			);
-	    	String folderPath = dateStr.replace("/", "\\"); 
-	    	
-	    	File uploadPathFolder = new File(uploadPath, folderPath);
-	    	//System.out.println( uploadPathFolder.toString());
-	    	
-	    	if(uploadPathFolder.exists() == false) {
-	    		uploadPathFolder.mkdirs();    // make directory
-	    		//uploadPathFolder.mkdirs();  // 상위 폴더가 없어도 폴더 전체를 만들어 준다
-	    		//uploadPathFolder.mkdir();   // 상위 폴더가 없으면 폴더를 만들지 못한다
-	    	}
-	    	
-	    	return folderPath;
-	    }
+	// 폴더 생성 : 날짜형식 폴더
+	private static  String  makeFolder( String uploadPath ) {
+		// uploadPath   folderPath 
+		// d:\dev\data  \2024\05\27
+		String  dateStr = LocalDate.now().format(
+				DateTimeFormatter.ofPattern("yyyy/MM/dd") ); 
+		// String  folderPath  = dateStr.replace("/", "\\");  // window
+		String  folderPath  = dateStr.replace("/", File.separator);
 		
+		File  uploadPathFolder = new File(uploadPath, folderPath);
+		// System.out.println( uploadPathFolder.toString() );
 		
+		if(uploadPathFolder.exists() == false ) {
+			uploadPathFolder.mkdirs();   // make directory
+			// mkdir()  : 상위폴더가 없어도 폴더전체를 만들지 못한다 (x)
+			// mkdirs() : 상위폴더가 없어도 폴더전체를 만들어준다
+		}
+		
+		return  folderPath;
+	}
+
+	// 실제 물리파일 삭제
+	public static void delete(String uploadPath, List<FilesVo> fileList) {
+		
+		String  path  = uploadPath;  // d:/dev/data/
+		
+		fileList.forEach( ( file ) -> {
+			String  sfile   = file.getSfilename(); 
+			// 2024\05\27\e9bf6184-99cb-470a-ac3a-d81cfd91f9d1_2차프로젝트 명단.txt
+			File    dfile   = new File( path + sfile );
+			// System.out.println("삭제 경로:" + dfile.getAbsolutePath());
+			// D:\dev\data\2024\05\28\393cc3e1-a6aa-454d-b4bb-ffffcde1db98_github token.txt
+			if(dfile.exists()) 
+				dfile.delete();
+		});
+		
+	}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

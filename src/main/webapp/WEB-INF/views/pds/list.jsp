@@ -19,8 +19,7 @@
 	  }
 	  
 	  td:nth-of-type(1) { width : 100px; }  
-
-	  td:nth-of-type(2) { width : 250px; text-align : left;  }  
+	  td:nth-of-type(2) { width : 280px; text-align : left;  }  
 	  td:nth-of-type(3) { width : 100px; }  
 	  td:nth-of-type(4) { width : 100px; }  
 	  td:nth-of-type(5) { width : 120px; }
@@ -51,9 +50,9 @@
 <body>	
 	<main>  
 	  
-	 <%@include file="/WEB-INF/include/pdspagingmenus.jsp" %>
+	 <%@include file="/WEB-INF/include/pdsmenus.jsp" %>
 	
-	  <h2>게시물 목록</h2>
+	  <h2>자료실 목록</h2>
 	  <table id="table" >
 	    <tr>
 	      <td>번호</td>
@@ -65,7 +64,7 @@
 	    </tr>
 	    <tr>
 	      <td colspan="6">
-	        [<a href="/Pds/WriteForm?menu_id=${ map.menu_id }&nowpage=${map.nowpage}">새 글 추가</a>]
+	        [<a href="/Pds/WriteForm?menu_id=${map.menu_id}&nowpage=${map.nowpage}">새 글 추가</a>]
 	      </td>
 	    </tr>
 	    
@@ -73,7 +72,7 @@
 	    <tr>
 	      <td>${ pdsVo.bno   }</td>
 	      <td>
-	       <a href="/Pds/View?bno=${ pdsVo.bno }&nowpage=${map.nowpage}&menu_id=${map.menu_id}">
+	       <a href="/Pds/View?bno=${pdsVo.bno}&nowpage=${map.nowpage}&menu_id=${map.menu_id}">
 	          ${ pdsVo.title       }
 	       </a>
 	      </td>	      	      

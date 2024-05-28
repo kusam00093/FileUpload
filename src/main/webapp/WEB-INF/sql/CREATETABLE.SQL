@@ -18,7 +18,6 @@ CREATE   TABLE   TUSER (
    , INDATE      DATE          DEFAULT SYSDATE
 );
 
-<<<<<<< HEAD
 -- 멀티 게시판(메뉴로 다중게시판구현) - 구조변경
 DROP    TABLE  BOARD;
 CREATE  TABLE  BOARD (
@@ -72,37 +71,4 @@ CREATE  TABLE  FILES
 
 
 
-=======
--- 멀티 게시판 - 구조변경
---DROP    TABLE  BOARD;
-CREATE TABLE BOARD (
-    BNO NUMBER(8,0)               PRIMARY KEY,
-    MENU_ID VARCHAR2(6),
-    TITLE VARCHAR2(240 BYTE)      NOT NULL,
-    CONTENT VARCHAR2(4000 BYTE),
-    WRITER VARCHAR2(12 BYTE),
-    REGDATE DATE DEFAULT SYSDATE,
-    HIT NUMBER(9,0) DEFAULT 0,
-    CONSTRAINT fk_menu  FOREIGN KEY (MENU_ID)  REFERENCES MENUS (MENU_ID)   ON DELETE CASCADE
-);
-
-
----- 자룍실 용 추가
--------------------------------------------
----- 자료실을 위한 files 테이블 생성
-------------------------------------------
-
-CREATE TABLE FILES
-(
-	FILE_NUM  NUMBER(6,0) PRIMARY KEY NOT NULL
-	,BNO      NUMBER(6,0) NOT NULL
-	,FILENAME VARCHAR2(300) NOT NULL
-	,FILEEXT  VARCHAR2(300) NOT NULL,
-	,SFILENAME VARCHAR2(300) NOT NULL
-	
-	,CONSTRAINT FILES_OK ORIMARY KEY(FILE_NUM,BNO)
-	,CONSTRAINT FK_BOARD_FILES_BNO FOREIGN KEY (BNO) REFERENCE BOARD(BNO) ON DELETE CASCADE
-
-)
->>>>>>> branch 'master' of https://github.com/kusam00093/FileUpload.git
 
