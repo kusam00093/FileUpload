@@ -27,7 +27,7 @@ public class PdsFile {
 		   // String.valueOf( object ) -> String	 
 		   // 제대로 작동안함 (String) map.get("uploadPath");
 	    System.out.println("uploadPath:" + uploadPath 
-	    		+ "uploadFiles length:" + uploadFiles.length
+	    		+ "uploadFiles length:" + uploadFiles.length  
 	    		);
 	    
 	    List<FilesVo>  fileList  =  new ArrayList<>();
